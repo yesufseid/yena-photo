@@ -34,23 +34,34 @@ export async function uploadPhotos(
   description: string,
   files: File[]
 ): Promise<UploadResponse> {
-  const formData = new FormData();
-  formData.append('eventName', eventName);
-  formData.append('eventDate', eventDate);
-  formData.append('description', description);
-  
-  // Add files to FormData
-  files.forEach((file) => {
-    formData.append('image', file);
-  });
+  // Convert files to base64 strings and send JSON payload
+  const toBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // result is like data:<type>;base64,<base64data>
+        const base64 = result.split(',')[1] || result;
+        resolve(base64);
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
 
   try {
-    const response = await fetch(`${API_BASE_URL}/photo`, {
+    const imagesBase64 = await Promise.all(files.map((f) => toBase64(f)));
+
+    const response = await fetch(`${API_BASE_URL}/api/events`, {
       method: 'POST',
-      body: formData,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventName,
+        eventDate,
+        description,
+        images: imagesBase64,
+      }),
     });
-    console.log(response);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new ApiError(

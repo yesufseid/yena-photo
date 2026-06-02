@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, Upload, BarChart3, Settings, Search } from 'lucide-react';
+import { LayoutGrid, Upload, BarChart3, Settings, Search, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 const sidebarItems = [
   {
@@ -30,9 +33,10 @@ const sidebarItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
 
   return (
-    <aside className="w-64 min-h-screen bg-card border-r border-border">
+    <aside className="w-64 min-h-screen bg-card border-r border-border flex flex-col">
       <div className="p-6">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl gradient-text">
           <span className="bg-gradient-to-br from-primary to-accent rounded-lg p-2">
@@ -42,7 +46,7 @@ export function Sidebar() {
         </Link>
       </div>
 
-      <nav className="px-4 py-6 space-y-2">
+      <nav className="px-4 py-6 space-y-2 flex-1">
         {sidebarItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -64,6 +68,27 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="p-4 border-t border-border">
+        {user && (
+          <>
+            <div className="mb-4">
+              <p className="text-sm text-muted-foreground">Signed in as</p>
+              <p className="text-sm font-medium truncate">{user.email}</p>
+            </div>
+            <Separator className="mb-4" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={signOut}
+            >
+              <LogOut size={16} className="mr-2" />
+              Sign Out
+            </Button>
+          </>
+        )}
+      </div>
     </aside>
   );
 }

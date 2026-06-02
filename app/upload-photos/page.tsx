@@ -1,6 +1,7 @@
 'use client';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { useMemo, useState } from 'react';
+import { uploadPhotos } from '@/lib/api-client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -128,21 +129,28 @@ export default function CreatorDashboardPage() {
 
   const startUpload = () => {
     if (!selectedFiles.length) return;
+    (async () => {
+      setUploadState('uploading');
+      setUploadProgress(0);
 
-    setUploadState('uploading');
-    setUploadProgress(0);
+      try {
+        // Start a simple progress animation while upload is in-flight
+        const interval = window.setInterval(() => {
+          setUploadProgress((current) => Math.min(95, current + Math.ceil(100 / selectedFiles.length / 4)));
+        }, 200);
 
-    const interval = window.setInterval(() => {
-      setUploadProgress((current) => {
-        const next = current + Math.ceil(100 / selectedFiles.length / 2);
-        if (next >= 100) {
-          window.clearInterval(interval);
-          setTimeout(() => setUploadState('success'), 350);
-          return 100;
-        }
-        return next;
-      });
-    }, 140);
+        // Call API to upload photos (client converts files to base64)
+        await uploadPhotos(activeEvent?.name || 'Event', new Date().toISOString().split('T')[0], '', selectedFiles);
+
+        window.clearInterval(interval);
+        setUploadProgress(100);
+        setUploadState('success');
+      } catch (err) {
+        console.error('Upload failed', err);
+        setUploadState('idle');
+        setUploadProgress(0);
+      }
+    })();
   };
 
   const closeUpload = () => {
