@@ -1,69 +1,18 @@
 'use client';
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreateEventDialog } from '@/components/create-event-dialog';
 import { CalendarDays, Image as ImageIcon, Plus } from 'lucide-react';
-
-interface Event {
-  id: string;
-  name: string;
-  event_date: string;
-  description?: string;
-  cover_photo?: string;
-  cover_photo_data?: string;
-  created_at: string;
-}
-
-const EVENTS_STORAGE_KEY = 'yena_events_cache';
+import { useEvents, EventItem } from '@/hooks/use-events';
 
 export default function EventsPage() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { events, loading, refresh } = useEvents();
   const [createOpen, setCreateOpen] = useState(false);
 
-  const loadEventsFromAPI = async () => {
-    try {
-      const res = await fetch('/api/events');
-      const data = await res.json();
-      if (data.success && data.events) {
-        setEvents(data.events);
-        window.localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(data.events));
-        return data.events;
-      }
-    } catch (err) {
-      console.error('Failed to load events', err);
-    }
-    return null;
-  };
-
-  useEffect(() => {
-    const loadEvents = async () => {
-      // Try to load from cache first
-      const cached = window.localStorage.getItem(EVENTS_STORAGE_KEY);
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached) as Event[];
-          setEvents(parsed);
-          setLoading(false);
-        } catch (err) {
-          console.warn('Failed to parse cached events', err);
-          window.localStorage.removeItem(EVENTS_STORAGE_KEY);
-        }
-      }
-
-      // Fetch fresh data from API
-      await loadEventsFromAPI();
-      setLoading(false);
-    };
-
-    loadEvents();
-  }, []);
-
   const handleEventCreated = async () => {
-    // Refresh events from API after creation
-    await loadEventsFromAPI();
+    await refresh();
   };
 
   const formatDate = (dateString: string) => {
@@ -115,7 +64,7 @@ export default function EventsPage() {
               </Card>
             ) : (
               <div className="grid gap-4 xl:grid-cols-3">
-                {events.map((event) => {
+                {events.map((event: EventItem) => {
                   const coverImage = event.cover_photo_data
                     ? `data:image/jpeg;base64,${event.cover_photo_data}`
                     : 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1000&q=80';
@@ -130,11 +79,16 @@ export default function EventsPage() {
                         />
                       </div>
                       <div className="space-y-4 p-6">
-                        <div>
-                          <h3 className="text-xl font-semibold text-slate-900">{event.name}</h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                            <CalendarDays size={16} />
-                            {formatDate(event.event_date)}
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-xl font-semibold text-slate-900">{event.name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                              <CalendarDays size={16} />
+                              {formatDate(event.event_date)}
+                            </div>
+                          </div>
+                          <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                            {event.photoCount ?? 1} photo{event.photoCount === 1 ? '' : 's'}
                           </div>
                         </div>
 

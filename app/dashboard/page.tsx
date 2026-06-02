@@ -1,17 +1,20 @@
+"use client";
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { DashboardCard } from '@/components/dashboard-card';
 import { Card } from '@/components/ui/card';
 import { Images, Sparkles, Search } from 'lucide-react';
-
-const recentUploads = [
-  { id: 1, event: 'Summer Festival 2024', photos: 342, date: '2024-05-28' },
-  { id: 2, event: 'Wedding Reception', photos: 156, date: '2024-05-25' },
-  { id: 3, event: 'Corporate Gala', photos: 289, date: '2024-05-20' },
-  { id: 4, event: 'Birthday Party', photos: 87, date: '2024-05-18' },
-  { id: 5, event: 'Beach Event', photos: 201, date: '2024-05-15' },
-];
+import { useEvents } from '@/hooks/use-events';
 
 export default function DashboardPage() {
+  const { events, loading } = useEvents();
+  const totalPhotos = events.reduce((sum, event) => sum + (event.photoCount ?? 1), 0);
+  const recentUploads = events.slice(0, 5).map((event) => ({
+    id: event.id,
+    event: event.name,
+    photos: event.photoCount ?? 1,
+    date: event.event_date || event.created_at,
+  }));
+
   return (
     <DashboardLayout>
       <div className="p-6 md:p-8">
@@ -25,13 +28,13 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <DashboardCard
             title="Total Photos"
-            value="5,430"
+            value={loading ? 'Loading...' : totalPhotos.toLocaleString()}
             icon={<Images size={24} className="text-primary" />}
             trend={{ value: 12, isPositive: true }}
           />
           <DashboardCard
-            title="Total Faces Indexed"
-            value="12,780"
+            title="Total Events"
+            value={loading ? 'Loading...' : events.length.toString()}
             icon={<Sparkles size={24} className="text-accent" />}
             trend={{ value: 8, isPositive: true }}
           />
@@ -57,15 +60,29 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentUploads.map((upload) => (
-                    <tr key={upload.id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                      <td className="py-3 px-4 text-sm">{upload.event}</td>
-                      <td className="py-3 px-4 text-sm">{upload.photos}</td>
-                      <td className="py-3 px-4 text-sm text-muted-foreground">
-                        {new Date(upload.date).toLocaleDateString()}
+                  {loading ? (
+                    <tr>
+                      <td className="py-6 px-4 text-center text-sm text-muted-foreground" colSpan={3}>
+                        Loading event data...
                       </td>
                     </tr>
-                  ))}
+                  ) : recentUploads.length === 0 ? (
+                    <tr>
+                      <td className="py-6 px-4 text-center text-sm text-muted-foreground" colSpan={3}>
+                        No recent uploads found.
+                      </td>
+                    </tr>
+                  ) : (
+                    recentUploads.map((upload) => (
+                      <tr key={upload.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                        <td className="py-3 px-4 text-sm">{upload.event}</td>
+                        <td className="py-3 px-4 text-sm">{upload.photos}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                          {upload.date ? new Date(upload.date).toLocaleDateString() : 'Unknown'}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

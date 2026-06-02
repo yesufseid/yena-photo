@@ -1,7 +1,8 @@
 'use client';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { useMemo, useState } from 'react';
-import { uploadPhotos } from '@/lib/api-client';
+import { uploadPhotos, EventItem } from '@/lib/api-client';
+import { useEvents } from '@/hooks/use-events';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -20,49 +21,7 @@ import {
   FolderPlus,
 } from 'lucide-react';
 
-const events = [
-  {
-    id: '1',
-    name: 'Summer Launch Party',
-    date: 'June 12, 2026',
-    cover: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1000&q=80',
-    photos: 128,
-    searches: 74,
-    attendees: 560,
-  },
-  {
-    id: '2',
-    name: 'City Marathon 2026',
-    date: 'July 8, 2026',
-    cover: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80',
-    photos: 212,
-    searches: 98,
-    attendees: 1_230,
-  },
-  {
-    id: '3',
-    name: 'Rooftop Awards Gala',
-    date: 'August 21, 2026',
-    cover: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1000&q=80',
-    photos: 84,
-    searches: 45,
-    attendees: 320,
-  },
-];
-
-const stats = [
-  {
-    title: 'Total Events',
-    value: 18,
-    icon: <CalendarDays size={22} className="text-primary" />,
-    trend: { value: 12, isPositive: true },
-  },
-  {
-    title: 'Total Photos',
-    value: '4.2K',
-    icon: <ImageIcon size={22} className="text-primary" />,
-    trend: { value: 8, isPositive: true },
-  },
+const baseStats = [
   {
     title: 'Faces Indexed',
     value: 3_450,
@@ -78,14 +37,32 @@ const stats = [
 ];
 
 export default function CreatorDashboardPage() {
+  const { events, loading } = useEvents();
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [activeEvent, setActiveEvent] = useState<typeof events[number] | null>(null);
+  const [activeEvent, setActiveEvent] = useState<EventItem | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success'>('idle');
   const [dragActive, setDragActive] = useState(false);
 
   const totalFiles = selectedFiles.length;
+
+  const totalPhotos = events.reduce((sum, event) => sum + (event.photoCount ?? 1), 0);
+  const stats = [
+    {
+      title: 'Total Events',
+      value: events.length,
+      icon: <CalendarDays size={22} className="text-primary" />,
+      trend: { value: events.length > 0 ? 5 : 0, isPositive: true },
+    },
+    {
+      title: 'Total Photos',
+      value: totalPhotos,
+      icon: <ImageIcon size={22} className="text-primary" />,
+      trend: { value: totalPhotos > 0 ? 8 : 0, isPositive: true },
+    },
+    ...baseStats,
+  ];
 
   const quickActions = useMemo(
     () => [
@@ -113,7 +90,7 @@ export default function CreatorDashboardPage() {
     [],
   );
 
-  const openUpload = (event: typeof events[number]) => {
+  const openUpload = (event: EventItem) => {
     setActiveEvent(event);
     setUploadOpen(true);
     setSelectedFiles([]);
@@ -183,7 +160,7 @@ export default function CreatorDashboardPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {stats.map((item) => (
+          {baseStats.map((item) => (
             <DashboardCard key={item.title} {...item} />
           ))}
         </div>
@@ -196,56 +173,70 @@ export default function CreatorDashboardPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button variant="outline">View all events</Button>
-              <Button onClick={() => openUpload(events[0])}>Upload Photos</Button>
+              <Button onClick={() => events.length > 0 && openUpload(events[0])}>Upload Photos</Button>
             </div>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-3">
-            {events.map((event) => (
-              <Card key={event.id} className="overflow-hidden border-0 bg-white shadow-sm">
-                <div className="relative h-56 overflow-hidden">
-                  <img
-                    src={event.cover}
-                    alt={event.name}
-                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                </div>
-                <div className="space-y-4 p-6">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <h3 className="text-xl font-semibold text-slate-900">{event.name}</h3>
-                      <p className="text-sm text-muted-foreground">{event.date}</p>
-                    </div>
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-                      {event.attendees.toLocaleString()} attendees
-                    </span>
+            {loading ? (
+              <div className="col-span-full rounded-3xl border border-slate-200 bg-white p-8 text-center text-muted-foreground">
+                Loading events...
+              </div>
+            ) : events.length === 0 ? (
+              <div className="col-span-full rounded-3xl border border-slate-200 bg-white p-8 text-center text-muted-foreground">
+                No events available yet. Create an event to begin uploading photos.
+              </div>
+            ) : (
+              events.map((event) => (
+                <Card key={event.id} className="overflow-hidden border-0 bg-white shadow-sm">
+                  <div className="relative h-56 overflow-hidden">
+                    <img
+                      src={event.cover_photo_data ? `data:image/jpeg;base64,${event.cover_photo_data}` : 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1000&q=80'}
+                      alt={event.name}
+                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                    />
                   </div>
+                  <div className="space-y-4 p-6">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-slate-900">{event.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(event.event_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                        {event.photoCount ?? 1} photo{event.photoCount === 1 ? '' : 's'}
+                      </span>
+                    </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-lg bg-slate-50 p-4">
-                      <p className="text-sm text-muted-foreground">Uploaded photos</p>
-                      <p className="mt-2 text-lg font-semibold text-slate-900">{event.photos}</p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-lg bg-slate-50 p-4">
+                        <p className="text-sm text-muted-foreground">Event date</p>
+                        <p className="mt-2 text-lg font-semibold text-slate-900">
+                          {new Date(event.event_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 p-4">
+                        <p className="text-sm text-muted-foreground">Main photos</p>
+                        <p className="mt-2 text-lg font-semibold text-slate-900">{event.photoCount ?? 1}</p>
+                      </div>
                     </div>
-                    <div className="rounded-lg bg-slate-50 p-4">
-                      <p className="text-sm text-muted-foreground">Searches</p>
-                      <p className="mt-2 text-lg font-semibold text-slate-900">{event.searches}</p>
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button variant="outline" className="flex-1">
-                      Manage Event
-                    </Button>
-                    <Button className="flex-1" onClick={() => openUpload(event)}>
-                      Upload Photos
-                    </Button>
-                    <Button variant="secondary" className="flex-1">
-                      Share Event
-                    </Button>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <Button variant="outline" className="flex-1">
+                        Manage Event
+                      </Button>
+                      <Button className="flex-1" onClick={() => openUpload(event)}>
+                        Upload Photos
+                      </Button>
+                      <Button variant="secondary" className="flex-1">
+                        Share Event
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))
+            )}
           </div>
         </section>
 

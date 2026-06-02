@@ -1,5 +1,27 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+export interface EventItem {
+  id: string;
+  name: string;
+  event_date: string;
+  description?: string | null;
+  cover_photo?: string | null;
+  cover_photo_data?: string | null;
+  created_at: string;
+  photoCount?: number;
+}
+
+export async function getEvents(): Promise<EventItem[]> {
+  const response = await fetch(`${API_BASE_URL}/api/events`);
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new ApiError(response.status, errorBody.message || 'Failed to load events.');
+  }
+
+  const data = await response.json();
+  return data?.events ?? [];
+}
+
 export interface SearchResult {
   photo_id: string;
   similarity: number;
