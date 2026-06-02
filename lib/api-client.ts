@@ -51,9 +51,7 @@ export class ApiError extends Error {
  * Upload photos for an event
  */
 export async function uploadPhotos(
-  eventName: string,
-  eventDate: string,
-  description: string,
+  id: string,
   files: File[]
 ): Promise<UploadResponse> {
   // Convert files to base64 strings and send JSON payload
@@ -77,9 +75,7 @@ export async function uploadPhotos(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        eventName,
-        eventDate,
-        description,
+         id:id,
         images: imagesBase64,
       }),
     });

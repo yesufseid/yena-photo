@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CreateEventDialog } from '@/components/create-event-dialog';
 import { CalendarDays, Image as ImageIcon, Plus } from 'lucide-react';
 import { useEvents, EventItem } from '@/hooks/use-events';
+import Link from 'next/link';
 
 export default function EventsPage() {
   const { events, loading, refresh } = useEvents();
@@ -97,9 +98,14 @@ export default function EventsPage() {
                         )}
 
                         <div className="flex flex-col gap-3 sm:flex-row">
-                          <Button variant="outline" className="flex-1">
-                            Manage
-                          </Button>
+                          <Link
+                                        href={`/events/${event.id}`}
+                                        className='flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                                    bg-gradient-to-r from-primary/20 to-accent/20 text-primary font-semibold
+                                            text-foreground hover:bg-muted'
+                                        
+                                      >Manage</Link>
+                      
                           <Button className="flex-1">
                             <ImageIcon size={16} className="mr-2" />
                             Upload Photos
