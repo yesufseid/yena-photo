@@ -51,35 +51,24 @@ export class ApiError extends Error {
  * Upload photos for an event
  */
 export async function uploadPhotos(
-  id: string,
-  files: File[]
+   id: string,
+  file: File
 ): Promise<UploadResponse> {
-  // Convert files to base64 strings and send JSON payload
-  const toBase64 = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        // result is like data:<type>;base64,<base64data>
-        const base64 = result.split(',')[1] || result;
-        resolve(base64);
-      };
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
-    });
+  const formData = new FormData();
+  formData.append('id', id);
+
+  
+  // Add files to FormData
+  
+    formData.append('image', file);
 
   try {
-    const imagesBase64 = await Promise.all(files.map((f) => toBase64(f)));
-
-    const response = await fetch(`${API_BASE_URL}/api/events`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/photo`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-         id:id,
-        images: imagesBase64,
-      }),
+      body: formData,
     });
-
+    console.log(response);
+    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new ApiError(
@@ -99,6 +88,7 @@ export async function uploadPhotos(
     );
   }
 }
+
 
 /**
  * Search for photos by selfie

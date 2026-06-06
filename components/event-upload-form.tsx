@@ -140,10 +140,9 @@ export function EventUploadForm({ onSubmit,id }: EventUploadFormProps & { id: st
     try {
       const files = uploadedFiles.map((f) => f.file);
 
-      await uploadPhotos(
-        id,
-        files
-      );
+      for (const file of files) {
+           await uploadPhotos(id, file);
+}
 
       onSubmit?.({
         files,
@@ -191,7 +190,7 @@ export function EventUploadForm({ onSubmit,id }: EventUploadFormProps & { id: st
         <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg flex gap-3">
           <AlertCircle
             size={20}
-            className="text-destructive flex-shrink-0 mt-0.5"
+            className="text-destructive shrink-0 mt-0.5"
           />
           <p className="text-sm text-destructive">{error}</p>
         </div>
@@ -222,6 +221,9 @@ export function EventUploadForm({ onSubmit,id }: EventUploadFormProps & { id: st
           <p className="font-semibold mb-1">
             Drag & drop photos or folders
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Upload summary will only show the total number of photos selected.
+          </p>
 
           <p className="text-sm text-muted-foreground">
             Click to select images or an entire folder
@@ -243,41 +245,24 @@ export function EventUploadForm({ onSubmit,id }: EventUploadFormProps & { id: st
       </div>
 
       {uploadedFiles.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold mb-3">
-            Selected Files ({uploadedFiles.length})
-          </h3>
+        <div className="mb-6 rounded-xl border border-border/70 bg-muted/40 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold">Ready to upload</p>
+              <p className="text-xs text-muted-foreground">
+                {uploadedFiles.length} photo{uploadedFiles.length === 1 ? '' : 's'} selected for this event.
+              </p>
+            </div>
 
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {uploadedFiles.map((file) => (
-              <div
-                key={file.id}
-                className="flex items-center justify-between p-3 bg-muted rounded-lg"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="text-lg">📷</div>
-
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {file.name}
-                    </p>
-
-                    <p className="text-xs text-muted-foreground">
-                      {(file.size / (1024 * 1024)).toFixed(2)} MB
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => removeFile(file.id)}
-                  className="p-1 hover:bg-background rounded transition-colors"
-                  aria-label="Remove file"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setUploadedFiles([])}
+              className="text-destructive hover:bg-destructive/10"
+            >
+              Clear selection
+            </Button>
           </div>
         </div>
       )}
@@ -289,7 +274,7 @@ export function EventUploadForm({ onSubmit,id }: EventUploadFormProps & { id: st
           uploadedFiles.length === 0 ||
           isUploading
         }
-        className="w-full bg-gradient-to-r from-primary to-accent hover:from-accent hover:to-primary"
+        className="w-full bg-linear-to-r from-primary to-accent hover:from-accent hover:to-primary"
       >
         {isUploading ? 'Uploading...' : 'Upload Photos'}
       </Button>

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = await getUserById(parseInt(userId));
+    const user = await getUserById(userId);
 
     if (!user) {
       return NextResponse.json(
