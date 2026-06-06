@@ -14,7 +14,7 @@ interface PhotoViewerModalProps {
   onDownload: () => void;
 }
 
-export function PhotoViewerModal({ isOpen, confidence = 95, photoId, onClose, onDownload }: PhotoViewerModalProps) {
+export function PhotoViewerModal({ isOpen, confidence = 0.95, photoId, onClose, onDownload }: PhotoViewerModalProps) {
   const [zoom, setZoom] = useState(100);
   const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
@@ -48,7 +48,7 @@ export function PhotoViewerModal({ isOpen, confidence = 95, photoId, onClose, on
             <h2 className="text-lg font-semibold">Photo Viewer</h2>
             {confidence && (
               <span className="text-sm px-3 py-1 rounded-full bg-primary/20 text-primary font-medium">
-                {confidence}% Match
+                {confidence*100}% Match
               </span>
             )}
           </div>

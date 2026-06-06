@@ -71,12 +71,12 @@ export function PhotoCard({ id, confidence, onView, onDownload }: PhotoCardProps
       <div className="p-4">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">Confidence</span>
-          <span className="text-sm font-bold text-primary">{confidence}%</span>
+          <span className="text-sm font-bold text-primary">{confidence*100}%</span>
         </div>
         <div className="mt-2 w-full bg-muted rounded-full h-2">
           <div
             className="bg-gradient-to-r from-primary to-accent h-2 rounded-full"
-            style={{ width: `${confidence}%` }}
+            style={{ width: `${confidence*100}%` }}
           />
         </div>
       </div>
