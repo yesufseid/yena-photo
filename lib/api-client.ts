@@ -98,7 +98,7 @@ export async function searchPhotos(selfieFile: File): Promise<SearchResult[]> {
   formData.append('image', selfieFile);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/search`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/search`, {
       method: 'POST',
       body: formData,
     });
