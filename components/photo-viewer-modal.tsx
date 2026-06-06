@@ -48,7 +48,7 @@ export function PhotoViewerModal({ isOpen, confidence = 0.95, photoId, onClose, 
             <h2 className="text-lg font-semibold">Photo Viewer</h2>
             {confidence && (
               <span className="text-sm px-3 py-1 rounded-full bg-primary/20 text-primary font-medium">
-                {confidence*100}% Match
+                 {(confidence * 100).toFixed(2)}% Match
               </span>
             )}
           </div>
