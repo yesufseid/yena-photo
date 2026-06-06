@@ -2,8 +2,9 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { DashboardCard } from '@/components/dashboard-card';
 import { Card } from '@/components/ui/card';
-import { Images, Sparkles, Search } from 'lucide-react';
+import { Images, Sparkles, Search, ArrowLeft } from 'lucide-react';
 import { useEvents } from '@/hooks/use-events';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const { events, loading } = useEvents();
@@ -17,6 +18,10 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
+      <Link href="/">
+                      <ArrowLeft size={26} />
+                    
+                    </Link>
       <div className="p-6 md:p-8">
         {/* Header */}
         <div className="mb-8">

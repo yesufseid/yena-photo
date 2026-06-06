@@ -29,7 +29,7 @@ export function Navbar() {
             <Link href="/find-photos" className="text-foreground hover:text-primary transition-colors">
               Find Photos
             </Link>
-            <Link href="/upload-photos" className="text-foreground hover:text-primary transition-colors">
+            <Link href="/dashboard" className="text-foreground hover:text-primary transition-colors">
               Upload Photos
             </Link>
           </div>

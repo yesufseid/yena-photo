@@ -29,7 +29,7 @@ export function HeroSection() {
         </h1>
 
         {/* Subheadline */}
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 slide-up-delay-2">
+        <p className="text-lg md:text-xl text-black max-w-2xl mx-auto mb-8 slide-up-delay-2">
           Upload your selfie and discover yourself in event photo collections. No more scrolling through hundreds of photos—our AI finds you in seconds.
         </p>
 
@@ -51,14 +51,14 @@ export function HeroSection() {
             size="lg"
             className="smooth-transition hover-lift"
           >
-            <Link href="/upload-photos">
+            <Link href="/dashboard" className="gap-2">
               Upload Event Photos
             </Link>
           </Button>
         </div>
 
         {/* Social Proof */}
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-black">
           Join thousands of event photographers and attendees
         </div>
       </div>

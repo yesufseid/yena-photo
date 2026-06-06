@@ -114,7 +114,7 @@ export default function EventsPage() {
                                         
                                       >Manage</Link>
                       
-                          <Link
+                          {/* <Link
                             href={{
                               pathname: `/events/${event.id}`,
                               query: {
@@ -130,7 +130,7 @@ export default function EventsPage() {
                           >
                             <ImageIcon size={16} />
                             Upload Photos
-                          </Link>
+                          </Link> */}
                         </div>
                       </div>
                     </Card>
