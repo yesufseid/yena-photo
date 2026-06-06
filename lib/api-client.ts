@@ -137,7 +137,7 @@ export async function searchPhotos(selfieFile: File): Promise<SearchResult[]> {
  * Get image URL for a photo by ID
  */
 export function getImageUrl(photoId: string): string {
-  return `${API_BASE_URL}/photos/${photoId}`;
+  return `${API_BASE_URL}/api/photos/${photoId}`;
 }
 
 /**
